@@ -59,7 +59,7 @@ class vrGame extends React.Component {
               ]
             }}
           source={{mesh:asset('M4A1/M4A1.obj'), texture:asset('M4A1/M4A1 render.jpeg')}}
-          />
+          />*/}
           <Mesh 
           style={{
             transform: [
@@ -69,7 +69,7 @@ class vrGame extends React.Component {
               ]
             }}
           source={{mesh:asset('M4A1/M4A1.obj'), texture:asset('M4A1/M4A1 render.jpeg')}}
-          />*/}
+          />
           <Mesh 
           style={{
             transform: [
