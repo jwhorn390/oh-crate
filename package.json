@@ -9,6 +9,7 @@
     "postinstall": "node postinstall.js && echo done"
   },
   "dependencies": {
+    "express": "^4.14.0",
     "ovr-audio": "~0.1.0",
     "ovrui": "~0.1.0",
     "react": "15.3.2",
