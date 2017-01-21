@@ -25,53 +25,76 @@ class vrGame extends React.Component {
       timer: 0,
       speedMultiplier: 1,
       score: 0,
+      timeGame: false,
+      show: 0
     };
     // Used for timing length of game
-    this.timeOfGame = Date.now()
+    this.timeOfGame = Date.now();
+    this.endOfGame = 0;
+    
     // Helpers for timing and rotation
     this.lastUpdate = Date.now();
     this.enterUpdate = null;
     this.rotateUpdate = Date.now();
+    
     // Crate movement
     this.move = this.move.bind(this);
     this.rotate = this.rotate.bind(this);
+    
     // Crate (enemy) creation
     this.createEnemies = this.createEnemies.bind(this);
     this.deleteEnemies = this.deleteEnemies.bind(this);
+    
     // Enemy destruction
     this.kill = this.kill.bind(this);
     this.resetTimer = this.resetTimer.bind(this);
+    
     // Level changes
     this.increaseLevel = this.increaseLevel.bind(this);
     this.decreaseLevel = this.decreaseLevel.bind(this);
+    
     // Speed changes
     this.increaseSpeed = this.increaseSpeed.bind(this);
     this.decreaseSpeed = this.decreaseSpeed.bind(this);
+
+    // Changes game type
+    this.changeGameType = this.changeGameType.bind(this);
+
+    // Toggle score text 
+    this.toggleScore = this.toggleScore.bind(this);
   }
 
-// FOR START AND STOP BUTTONS 
+// FOR START BUTTON, CREATION OF ENEMIES
   
-   createEnemies() {
+  createEnemies() {
     this.deleteEnemies()
-    console.log('START')
-    let numOfEnemies = 10* (this.state.levelMultiplier / 2)
-    console.log(numOfEnemies)
-    let enemiesArr = []
-    for (var i = 0; i < numOfEnemies; i++) {
-      let x = (Math.random() < 0.5) ? (Math.floor(Math.random()*10)) : Math.floor(Math.random()*-10);
-      let y = (Math.random() < 0.5) ? (Math.floor(Math.random()*5)) : Math.floor(Math.random()*-5);
-      let z = Math.floor(Math.random()* -200) - 100
-      // let z = Math.floor(Math.random()*1) - 10 //THIS LINE FOR TESTING DESTRUCTION OF ELEMENTS, USE ABOVE LET Z FOR GAME TESTING
-      enemiesArr.push([x,y,z])
-    }
-    this.setState({enemies: enemiesArr})
+    this.timeOfGame = Date.now()
+      let numOfEnemies = 10 * (this.state.levelMultiplier / 2)
+      let enemiesArr = []
+      for (var i = 0; i < numOfEnemies; i++) {
+        if (!this.state.timeGame) {
+          let x = (Math.random() < 0.5) ? (Math.floor(Math.random()*10)) : Math.floor(Math.random()*-10);
+          let y = (Math.random() < 0.5) ? (Math.floor(Math.random()*5)) : Math.floor(Math.random()*-5);
+          let z = Math.floor(Math.random()* -200) - 100
+          enemiesArr.push([x,y,z])
+        }
+        else if (this.state.timeGame)  { //Extraneous check to make sure this.state.timeGame is in fact 'true'
+          let x = (Math.random() < 0.5) ? (Math.floor(Math.random()*10)) : Math.floor(Math.random()*-10);
+          let y = (Math.random() < 0.5) ? (Math.floor(Math.random()*5)) : Math.floor(Math.random()*-5);
+          let z = Math.floor(Math.random()*1) - 40 //THIS LINE WAS FOR TESTING DESTRUCTION OF ELEMENTS, NOW USED FOR TIME GAME
+          enemiesArr.push([x,y,z])
+        }
+      }
+    this.setState({enemies: enemiesArr, score: 0})
     this.move()
   }
+
+// FOR STOP BUTTON AND FOR RESETTING GAME, DELETION OF ALL ENEMIES
 
   deleteEnemies() {
     console.log('STOP')
     this.setState({enemies: []})
-    this.setState({positionAdd: 0})
+    this.setState({positionAdd: 0, show: 0})
     this.lastUpdate = Date.now()
   }
 
@@ -108,7 +131,6 @@ class vrGame extends React.Component {
 // FUNCTION FOR 'KILLING' CRATE
 
   kill(id) {
-    console.log('IN KILL FUNC')
     const entered = Date.now()
     if (!this.enterUpdate) this.enterUpdate = Date.now();
     const change = entered - this.enterUpdate;
@@ -117,6 +139,12 @@ class vrGame extends React.Component {
       console.log(id)
       newArr.splice(id,1)
       this.setState({enemies: newArr})
+      this.setState({score: this.state.score + 1})
+    }
+    console.log('LENGTH',this.state.enemies.length)
+    if(this.state.enemies.length === 1) {
+      this.setState({show: 1})
+      this.endOfGame = Date.now()
     }
   }
 
@@ -153,6 +181,21 @@ class vrGame extends React.Component {
   decreaseSpeed() {
     if (this.state.speedMultiplier === 1) return;
     else this.setState({speedMultiplier: this.state.speedMultiplier-1})
+  }
+
+// CHANGES GAME TYPE
+
+  changeGameType() {
+    console.log('BEFORE TYPE CHANGE:', this.state.timeGame)
+    this.setState({timeGame: !this.state.timeGame})
+    console.log('AFTER TYPE CHANGE:', this.state.timeGame)
+  }
+
+// TOGGLE SCORE AND TIME
+  
+  toggleScore() {
+    if (this.state.show === 0) this.setState({show: 1})
+    else this.setState({show: 0})
   }
 
 // FOR WHEN COMPONENT MOUNTS (left blank for now)
@@ -196,11 +239,15 @@ class vrGame extends React.Component {
             { 
               // console.log(coords)
               let id = this.state.enemies.indexOf(coords)
-              let craziness;
+              let craziness, movement;
               // for nuts rotation around x-axis, need to make button to toggle the crayRotate func
               if (this.state.crazy) 
                 craziness = this.state.rotate;
               else craziness = 0;
+              // for if the crates should move
+              if (!this.state.timeGame) movement = -this.state.positionAdd/(50/this.state.speedMultiplier)
+              else movement = 0 
+              
               return (
                 <Mesh  key={id} id={id} style={{
                   transform: [
@@ -208,7 +255,7 @@ class vrGame extends React.Component {
                     {scale: 2},
                     {rotateY: 180},
                     {rotateX: craziness},
-                    {translateZ: -this.state.positionAdd/(50/this.state.speedMultiplier) }
+                    {translateZ: movement }
                     ]
                   }}
                   source={{mesh:asset('Crate/Crate1.obj'), texture:asset('Crate/crate_1.jpg')}}
@@ -219,13 +266,25 @@ class vrGame extends React.Component {
               
             )})
         }
-        
-   
+
+        <Text style={{
+          fontSize: this.state.show*2,
+          margin: 0,
+          padding: 0,
+          transform: [
+            {translate: [0, 2, -30]}
+          ]
+        }}>
+          Score: {this.state.score} Time: {(this.endOfGame - this.timeOfGame)/1000}s
+        </Text>
+            
         {/*Add simple lighting*/}
         <PointLight style={{color:'white', transform:[{translate:[0,40,700]}]}} />
-        {/*View for all buttons, flexDirection is similar to "class = 'row'" in bootstrap*/}
+        {/*View for START STOP buttons, flexDirection is similar to "class = 'row'" in bootstrap*/}
         <View style={{
           flexDirection: 'row',
+          margin: 0,
+          padding: 0,
           transform: [{translateY: -1}]
         }}>
           <VrButton>
@@ -268,6 +327,7 @@ class vrGame extends React.Component {
             </Text>
           </VrButton>
         </View>
+      {/*View for Level and Speed buttons, flexDirection is similar to "class = 'row'" in bootstrap*/}
        <View 
         style = {{
           flexDirection: 'row',
@@ -304,6 +364,7 @@ class vrGame extends React.Component {
           SPEED: {this.state.speedMultiplier}      
           </Text>
         </View>
+        {/*View for + and - buttons, flexDirection is similar to "class = 'row'" in bootstrap*/}
           <View style={{
             flexDirection:'row',
             transform: [{translate: [0,0,1]}]
@@ -322,7 +383,7 @@ class vrGame extends React.Component {
                   {rotateX: -75}
                 ]
               }}
-              onEnter={()=> {this.decreaseSpeed()}}
+              onEnter={()=>{this.decreaseSpeed()}}
               >
               -
               </Text>
@@ -342,7 +403,7 @@ class vrGame extends React.Component {
                   {rotateX: -75}
                 ]
               }}
-              onEnter={()=> {this.increaseSpeed()}}
+              onEnter={()=>{this.increaseSpeed()}}
               >
               +
               </Text>
@@ -362,7 +423,7 @@ class vrGame extends React.Component {
                   {rotateX: -75}
                 ]
               }}
-              onEnter={()=> {this.decreaseLevel()}}
+              onEnter={()=>{this.decreaseLevel()}}
               >
               -
               </Text>
@@ -382,11 +443,43 @@ class vrGame extends React.Component {
                   {rotateX: -75}
                 ]
               }}
-              onEnter={()=> {this.increaseLevel()}}
+              onEnter={()=>{this.increaseLevel()}}
               >
               +
               </Text>
             </VrButton>
+          </View>
+          <View style={{
+            flexDirection:'row',
+            transform: [{translate: [-4,1.5,1.75]}]
+          }}>
+          <VrButton>
+            <Text style={{
+              fontSize: 0.4,
+              textAlign: 'center',
+              textAlignVertical: 'center',
+              transform: [
+                {translate: [0,0,0]},
+                {rotateY: 75}
+              ]
+            }}
+            onEnter={()=>{this.changeGameType()}}
+            >
+            Time Game? 
+            </Text>
+            <Text style={{
+              fontSize: 0.4,
+              textAlign: 'center',
+              textAlignVertical: 'center',
+              transform: [
+                {translate: [0,0,0]},
+                {rotateY: 75}
+              ]
+            }}
+            >
+            {(this.state.timeGame) ? 'Yup' : 'Nope'}
+            </Text>
+          </VrButton>  
           </View>
    
       </View>
