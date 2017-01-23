@@ -26,7 +26,9 @@ class vrGame extends React.Component {
       speedMultiplier: 1,
       score: 0,
       timeGame: false,
-      show: 0
+      show: 0,
+      showAll: 0,
+      started: 1
     };
     // Used for timing length of game
     this.timeOfGame = Date.now();
@@ -62,6 +64,9 @@ class vrGame extends React.Component {
 
     // Toggle score text 
     this.toggleScore = this.toggleScore.bind(this);
+
+    // Start the app
+    this.start = this.start.bind(this);
   }
 
 // FOR START BUTTON, CREATION OF ENEMIES
@@ -92,7 +97,6 @@ class vrGame extends React.Component {
 // FOR STOP BUTTON AND FOR RESETTING GAME, DELETION OF ALL ENEMIES
 
   deleteEnemies() {
-    console.log('STOP')
     this.setState({enemies: []})
     this.setState({positionAdd: 0, show: 0})
     this.lastUpdate = Date.now()
@@ -136,12 +140,10 @@ class vrGame extends React.Component {
     const change = entered - this.enterUpdate;
     if (change > 500) {
       var newArr = this.state.enemies.slice()
-      console.log(id)
       newArr.splice(id,1)
       this.setState({enemies: newArr})
       this.setState({score: this.state.score + 1})
     }
-    console.log('LENGTH',this.state.enemies.length)
     if(this.state.enemies.length === 1) {
       this.setState({show: 1})
       this.endOfGame = Date.now()
@@ -151,7 +153,6 @@ class vrGame extends React.Component {
 // FUNCTION FOR RESETTING KILL TIMER (EXCEPT NOT USED AS OF NOW, LEFT IN FOR POSSIBLE USE LATER)
 
   resetTimer() {
-    console.log('IN RESET TIMER')
     this.setState({timer: 0})
   }
 
@@ -186,9 +187,7 @@ class vrGame extends React.Component {
 // CHANGES GAME TYPE
 
   changeGameType() {
-    console.log('BEFORE TYPE CHANGE:', this.state.timeGame)
     this.setState({timeGame: !this.state.timeGame})
-    console.log('AFTER TYPE CHANGE:', this.state.timeGame)
   }
 
 // TOGGLE SCORE AND TIME
@@ -197,6 +196,12 @@ class vrGame extends React.Component {
     if (this.state.show === 0) this.setState({show: 1})
     else this.setState({show: 0})
   }
+
+// START APP AND SHOW ALL COMPONENTS AND HIDE START COMPONENT
+
+start() {
+  this.setState({showAll: 1, started: 0})
+}
 
 // FOR WHEN COMPONENT MOUNTS (left blank for now)
 
@@ -237,7 +242,6 @@ class vrGame extends React.Component {
         { //MAP FUNCTION TO DYNAMICALLY CREATE CRATES
           this.state.enemies.map((coords) =>  
             { 
-              // console.log(coords)
               let id = this.state.enemies.indexOf(coords)
               let craziness, movement;
               // for nuts rotation around x-axis, need to make button to toggle the crayRotate func
@@ -268,6 +272,10 @@ class vrGame extends React.Component {
         }
 
         <Text style={{
+          fontSize: 3 * this.state.started
+        }}
+
+        <Text style={{
           fontSize: this.state.show*2,
           margin: 0,
           padding: 0,
@@ -289,7 +297,7 @@ class vrGame extends React.Component {
         }}>
           <VrButton>
             <Text style={{
-              fontSize: 1,
+              fontSize: 1 * this.state.showAll,
               // paddingTop: 0.025,
               // paddingBottom: 0.025,
               // paddingLeft: 0.05,
@@ -309,7 +317,7 @@ class vrGame extends React.Component {
 
           <VrButton>
             <Text style={{
-              fontSize: 1,
+              fontSize: 1 * this.state.showAll,
               // paddingTop: 0.025,
               // paddingBottom: 0.025,
               // paddingLeft: 0.05,
@@ -334,7 +342,7 @@ class vrGame extends React.Component {
           transform: [{translate: [0, -1, 0]}]
         }}>
           <Text style={{
-            fontSize: 0.8,
+            fontSize: 0.8 * this.state.showAll,
             paddingTop: 0.025,
             paddingBottom: 0.025,
             paddingLeft: 0.05,
@@ -349,7 +357,7 @@ class vrGame extends React.Component {
           LEVEL: {this.state.levelMultiplier}      
           </Text>
           <Text style={{
-            fontSize: 0.8,
+            fontSize: 0.8 * this.state.showAll,
             paddingTop: 0.025,
             paddingBottom: 0.025,
             paddingLeft: 0.05,
@@ -371,7 +379,7 @@ class vrGame extends React.Component {
           }}>
             <VrButton>
               <Text style={{
-                fontSize: 1,
+                fontSize: 1 * this.state.showAll,
                 // paddingTop: 0.025,
                 // paddingBottom: 0.025,
                 // paddingLeft: 0.05,
@@ -391,7 +399,7 @@ class vrGame extends React.Component {
 
             <VrButton>
               <Text style={{
-                fontSize: 1,
+                fontSize: 1 * this.state.showAll,
                 // paddingTop: 0.025,
                 // paddingBottom: 0.025,
                 // paddingLeft: 0.05,
@@ -411,7 +419,7 @@ class vrGame extends React.Component {
 
             <VrButton>
               <Text style={{
-                fontSize: 1,
+                fontSize: 1 * this.state.showAll,
                 // paddingTop: 0.025,
                 // paddingBottom: 0.025,
                 // paddingLeft: 0.05,
@@ -431,7 +439,7 @@ class vrGame extends React.Component {
 
             <VrButton>
               <Text style={{
-                fontSize: 1,
+                fontSize: 1 * this.state.showAll,
                 // paddingTop: 0.025,
                 // paddingBottom: 0.025,
                 // paddingLeft: 0.05,
@@ -449,13 +457,14 @@ class vrGame extends React.Component {
               </Text>
             </VrButton>
           </View>
+          {/*View for Time Game Toggle button*/}
           <View style={{
             flexDirection:'row',
             transform: [{translate: [-4,1.5,1.75]}]
           }}>
           <VrButton>
             <Text style={{
-              fontSize: 0.4,
+              fontSize: 0.4 * this.state.showAll,
               textAlign: 'center',
               textAlignVertical: 'center',
               transform: [
@@ -468,7 +477,7 @@ class vrGame extends React.Component {
             Time Game? 
             </Text>
             <Text style={{
-              fontSize: 0.4,
+              fontSize: 0.4 * this.state.showAll,
               textAlign: 'center',
               textAlignVertical: 'center',
               transform: [
