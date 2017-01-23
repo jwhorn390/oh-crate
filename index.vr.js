@@ -263,17 +263,34 @@ start() {
                     ]
                   }}
                   source={{mesh:asset('Crate/Crate1.obj'), texture:asset('Crate/crate_1.jpg')}}
-                  onMouseEnter={() => { this.kill(id) }}
+                  onEnter={() => { this.kill(id) }}
                   // onMouseExit unused for now
-                  onMouseExit={() => {this.resetTimer() }}
+                  onExit={() => {this.resetTimer() }}
                 />
               
             )})
         }
 
         <Text style={{
-          fontSize: 3 * this.state.started
+          fontSize: 7 * this.state.started,
+          // backgroundColor: 'red',
+          transform: [
+            {translate: [0, 5, -30]}
+          ]
+        }}>
+          OH-CRATE
+        </Text>
+        
+        <Text style={{
+          fontSize: 1 * this.state.started,
+          transform: [
+            {translate: [0, 1, -10]}
+          ]
         }}
+        onEnter={() => this.start()}
+        >
+          START
+        </Text>
 
         <Text style={{
           fontSize: this.state.show*2,
