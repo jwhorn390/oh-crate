@@ -12,10 +12,6 @@ function init(bundle, parent, options) {
   // const cubeModule = new CubeModule()
   const vr = new VRInstance(bundle, 'vrGame', parent, {
     // Add custom options here
-    cursorVisibility: 'visible',
-    // nativeModules: [ cubeModule ],
-    // scene: scene,
-    enableHotReload: true,
     ...options,
   });
 
